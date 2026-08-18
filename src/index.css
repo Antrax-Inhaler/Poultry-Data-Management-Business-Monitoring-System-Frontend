@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/*
+  Senior-friendly baseline. This project's users include farm staff
+  in their 60s, so we bias toward larger text, higher contrast, and
+  bigger touch targets everywhere rather than relying on every screen
+  remembering to opt in.
+*/
+
+@theme {
+  /* Tailwind's default gray-400/500 read too light for older eyes on
+     white backgrounds; darken them app-wide without touching every
+     className that already uses text-gray-400 / text-gray-500. */
+  --color-gray-400: #6b7280;
+  --color-gray-500: #52525b;
+}
+
+:root {
+  /* 18px base instead of the browser default 16px. Every Tailwind
+     text-*, p-*, gap-*, and h-* utility is defined in rem, so this one
+     change scales body text, spacing, and touch targets together and
+     keeps every screen already built proportionate. */
+  font-size: 18px;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+/* Minimum comfortable touch target (WCAG 2.5.5 AAA is 44x44px) for
+   every button, native select, and text input, without requiring each
+   component to remember to set it. */
+button,
+select,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+input[type="password"],
+input[type="checkbox"],
+input[type="file"] {
+  min-height: 2.75rem;
+}
+
+input[type="checkbox"] {
+  min-height: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* A visible focus outline matters more for users relying on larger
+   click targets and slower, more deliberate navigation. */
+:focus-visible {
+  outline: 3px solid #4f46e5;
+  outline-offset: 2px;
+}
