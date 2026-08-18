@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import client from '../api/client'
-import { useAuth } from '../context/AuthContext'
+import logo from '../assets/logo.jpg'
+import ownerBeedz from '../assets/owner-beedz.jpg'
+import ownerJovenal from '../assets/owner-jovenal.jpg'
 
 interface BusinessProfile {
   name: string
@@ -19,37 +20,94 @@ const CUSTOMER_SEGMENTS = [
   { title: 'Events', desc: 'Weddings, baptisms, fiestas — bulk orders on request.' },
 ]
 
+const NAV_LINKS = [
+  { href: '#products', label: 'Products' },
+  { href: '#customers', label: 'Who We Serve' },
+  { href: '#team', label: 'Our Team' },
+  { href: '#contact', label: 'Contact' },
+]
+
+const TEAM = [
+  {
+    name: 'Beedz Reynido Lagahit',
+    role: 'Co-Owner',
+    verified: true,
+    photo: ownerBeedz,
+    facebook: 'https://web.facebook.com/beedz.lagahit',
+    phones: ['0935 773 1224', '0935 003 6321'],
+  },
+  {
+    name: 'Jovenal Lagahit',
+    role: 'Co-Owner',
+    verified: false,
+    photo: ownerJovenal,
+    facebook: 'https://web.facebook.com/jovenal.lagahit.1',
+    phones: [],
+  },
+]
+
 export default function Home() {
-  const { user } = useAuth()
   const [profile, setProfile] = useState<BusinessProfile | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     client.get('/public/business-profile').then((res) => setProfile(res.data)).catch(() => {})
   }, [])
 
-  const businessName = profile?.name || 'Poultry Farm'
+  const businessName = profile?.name || 'Lagahit Poultry Farm'
 
   return (
     <div className="bg-white text-black">
       {/* Header */}
-      <header className="border-b border-black">
-        <div className="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
-          <span className="text-lg font-bold tracking-tight">{businessName}</span>
-          <nav className="flex items-center gap-6 text-sm">
-            <a href="#products" className="hover:underline">Products</a>
-            <a href="#customers" className="hover:underline">Who We Serve</a>
-            <a href="#contact" className="hover:underline">Contact</a>
-            {user ? (
-              <Link to="/dashboard" className="px-4 py-2 border border-black rounded-none hover:bg-black hover:text-white transition-colors">
-                Dashboard
-              </Link>
-            ) : (
-              <Link to="/login" className="px-4 py-2 border border-black rounded-none hover:bg-black hover:text-white transition-colors">
-                Staff Login
-              </Link>
-            )}
+      <header className="border-b border-black sticky top-0 bg-white/95 backdrop-blur z-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+          <a href="#" className="flex items-center gap-3 min-w-0">
+            <img src={logo} alt={`${businessName} logo`} className="h-10 w-10 rounded-full object-cover shrink-0" />
+            <span className="text-base sm:text-lg font-bold tracking-tight truncate">{businessName}</span>
+          </a>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+            {NAV_LINKS.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                className="relative py-1 text-gray-700 hover:text-black transition-colors after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-black after:transition-all hover:after:w-full"
+              >
+                {l.label}
+              </a>
+            ))}
           </nav>
+
+          {/* Mobile menu toggle */}
+          <button
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+            className="md:hidden inline-flex flex-col justify-center items-center gap-1.5 w-9 h-9"
+          >
+            <span className={`block h-0.5 w-6 bg-black transition-transform ${menuOpen ? 'translate-y-2 rotate-45' : ''}`} />
+            <span className={`block h-0.5 w-6 bg-black transition-opacity ${menuOpen ? 'opacity-0' : ''}`} />
+            <span className={`block h-0.5 w-6 bg-black transition-transform ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`} />
+          </button>
         </div>
+
+        {/* Mobile nav panel */}
+        {menuOpen && (
+          <nav className="md:hidden border-t border-black px-4 sm:px-6 py-3 flex flex-col gap-1 text-sm font-medium">
+            {NAV_LINKS.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setMenuOpen(false)}
+                className="py-2.5 border-b border-gray-100 last:border-0 text-gray-700 hover:text-black"
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+        )}
       </header>
 
       {/* Hero */}
@@ -150,6 +208,56 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Our Team */}
+      <section id="team" className="border-t border-black py-20">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-2">Our Team</h2>
+          <p className="text-gray-600 mb-10">The people behind {businessName}.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl">
+            {TEAM.map((person) => (
+              <div key={person.name} className="flex items-start gap-4">
+                <img
+                  src={person.photo}
+                  alt={person.name}
+                  className="h-20 w-20 rounded-full object-cover shrink-0 border border-black"
+                />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="font-semibold text-lg">{person.name}</h3>
+                    {person.verified && (
+                      <span
+                        title="Verified by Meta"
+                        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] shrink-0"
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-500 text-sm mb-2">{person.role}</p>
+                  {person.phones.length > 0 && (
+                    <div className="text-sm text-gray-700 space-y-0.5 mb-2">
+                      {person.phones.map((p) => (
+                        <a key={p} href={`tel:${p.replace(/\s+/g, '')}`} className="block hover:underline">
+                          {p}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  <a
+                    href={person.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium hover:underline"
+                  >
+                    Facebook →
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Contact */}
       <section id="contact" className="border-t border-black py-20">
         <div className="max-w-6xl mx-auto px-6">
@@ -181,9 +289,8 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-black">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-wrap justify-between items-center text-sm text-gray-500">
-          <span>© {new Date().getFullYear()} {businessName}</span>
-          <Link to="/login" className="hover:underline">Staff Login</Link>
+        <div className="max-w-6xl mx-auto px-6 py-6 text-sm text-gray-500">
+          <span>© {new Date().getFullYear()} LAGAHIT INTEGRATED AGRI ENTERPRISE</span>
         </div>
       </footer>
     </div>
