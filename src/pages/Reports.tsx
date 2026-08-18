@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import client from '../api/client'
 import type { Batch } from '../api/types'
 
-const TABS = ['Batches', 'Sales', 'Expenses', 'Feed', 'Financial', 'DTI Evidence'] as const
+const TABS = ['Batches', 'Sales', 'Expenses', 'Feed', 'Financial', 'DTI Evidence', 'Detailed PDF Report'] as const
 type Tab = (typeof TABS)[number]
 
 export default function Reports() {
@@ -29,6 +29,7 @@ export default function Reports() {
       {tab === 'Feed' && <DateRangeReport endpoint="/reports/feed" render={FeedReport} />}
       {tab === 'Financial' && <DateRangeReport endpoint="/reports/financial" render={FinancialReport} />}
       {tab === 'DTI Evidence' && <DtiEvidenceReport />}
+      {tab === 'Detailed PDF Report' && <DetailedPdfReport />}
     </div>
   )
 }
@@ -206,6 +207,68 @@ function DtiEvidenceReport() {
         </button>
       </div>
       {data ? <DtiReport {...data} /> : <div className="text-gray-400">Loading…</div>}
+    </div>
+  )
+}
+
+function DetailedPdfReport() {
+  const [from, setFrom] = useState(() => new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10))
+  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10))
+  const [downloading, setDownloading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleDownload() {
+    setDownloading(true)
+    setError('')
+    try {
+      const res = await client.get('/reports/detailed/pdf', {
+        params: { from, to },
+        responseType: 'blob',
+      })
+      const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = `Detailed-Business-Report-${from}-to-${to}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(blobUrl)
+    } catch {
+      setError('Could not generate the report. Please try again.')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white shadow-sm rounded-lg p-6">
+        <h3 className="font-medium text-gray-800">Detailed Business Report (PDF)</h3>
+        <p className="text-sm text-gray-500 mt-1">
+          A single branded PDF covering the executive summary, financial trend, batch production detail,
+          sales, expenses, feed efficiency, and customer reorder forecast for the selected period —
+          letterheaded with the full company logo.
+        </p>
+
+        <div className="flex flex-wrap gap-3 items-end mt-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">From</label>
+            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded-md border-gray-300 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">To</label>
+            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="rounded-md border-gray-300 text-sm" />
+          </div>
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="px-4 py-2 bg-gray-800 text-white text-sm rounded-md hover:bg-gray-700 disabled:opacity-50"
+          >
+            {downloading ? 'Generating…' : 'Download PDF Report'}
+          </button>
+        </div>
+        {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+      </div>
     </div>
   )
 }
