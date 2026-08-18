@@ -34,7 +34,7 @@ const TEAM = [
     verified: true,
     photo: ownerBeedz,
     facebook: 'https://web.facebook.com/beedz.lagahit',
-    phones: ['0935 773 1224', '0935 003 6321'],
+    phones: ['0935 773 1224'],
   },
   {
     name: 'Jovenal Lagahit',
@@ -42,7 +42,7 @@ const TEAM = [
     verified: false,
     photo: ownerJovenal,
     facebook: 'https://web.facebook.com/jovenal.lagahit.1',
-    phones: [],
+    phones: ['0935 003 6321'],
   },
 ]
 
@@ -281,8 +281,13 @@ export default function Home() {
                 <div className="text-lg">{profile.address}</div>
               </div>
             )}
-            {!profile?.phone && !profile?.email && !profile?.address && (
-              <p className="text-gray-500">Contact details will appear here once added in the farm's configuration.</p>
+            {TEAM.map((person) =>
+              person.phones.map((p) => (
+                <div key={p}>
+                  <div className="text-xs uppercase tracking-wide text-gray-500 mb-1">{person.name}</div>
+                  <a href={`tel:${p.replace(/\s+/g, '')}`} className="text-lg hover:underline">{p}</a>
+                </div>
+              )),
             )}
           </div>
         </div>
