@@ -211,3 +211,19 @@ export interface DashboardData {
   active_batches: Batch[]
   reorder_forecast: ReorderForecast[]
 }
+
+export interface TrendPoint {
+  label: string
+  revenue: number
+  expenses: number
+  profit: number
+  feed_cost: number
+  orders_count: number
+}
+
+export interface TrendsData {
+  from: string
+  to: string
+  granularity: 'day' | 'week' | 'month'
+  points: TrendPoint[]
+}

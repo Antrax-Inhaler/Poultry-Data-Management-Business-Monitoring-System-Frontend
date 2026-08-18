@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import client from '../api/client'
 import type { DashboardData } from '../api/types'
+import TrendsChart from '../components/TrendsChart'
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -39,48 +40,41 @@ export default function Dashboard() {
         </div>
       )}
 
-      {data.reorder_forecast.length > 0 && (
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="p-4 border-b">
-            <h3 className="font-medium text-gray-800">Customers Likely to Reorder Soon</h3>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Predicted from each customer's own past order spacing — call the overdue ones before they go elsewhere.
-            </p>
-          </div>
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 text-gray-500 text-left">
-              <tr>
-                <th className="px-4 py-2">Customer</th>
-                <th className="px-4 py-2">Contact</th>
-                <th className="px-4 py-2">Last Order</th>
-                <th className="px-4 py-2">Predicted Next Order</th>
-                <th className="px-4 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {data.reorder_forecast.map((r) => (
-                <tr key={r.customer_id}>
-                  <td className="px-4 py-2">
-                    <Link to={`/customers/${r.customer_id}`} className="text-indigo-600 hover:underline">{r.display_name}</Link>
-                  </td>
-                  <td className="px-4 py-2">{r.contact_number ?? '—'}</td>
-                  <td className="px-4 py-2">{r.last_order_date}</td>
-                  <td className="px-4 py-2">{r.predicted_next_order_date}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-xs ${
-                        r.status === 'Overdue' ? 'bg-red-100 text-red-700' : r.status === 'Due Soon' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 items-stretch">
+        <div className="xl:col-span-2">
+          <TrendsChart />
         </div>
-      )}
+
+        <div className="bg-white shadow-sm rounded-lg overflow-hidden flex flex-col">
+          <div className="p-3 border-b">
+            <h3 className="font-medium text-gray-800 text-sm">Likely to Reorder Soon</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Based on each customer's usual order spacing.</p>
+          </div>
+          {data.reorder_forecast.length === 0 ? (
+            <div className="p-4 text-sm text-gray-400 text-center">No reorder predictions yet.</div>
+          ) : (
+            <ul className="divide-y overflow-y-auto max-h-[320px]">
+              {data.reorder_forecast.map((r) => (
+                <li key={r.customer_id} className="px-3 py-2 flex items-center justify-between gap-2 text-xs">
+                  <div className="min-w-0">
+                    <Link to={`/customers/${r.customer_id}`} className="text-indigo-600 hover:underline font-medium truncate block">
+                      {r.display_name}
+                    </Link>
+                    <div className="text-gray-400">Next: {r.predicted_next_order_date}</div>
+                  </div>
+                  <span
+                    className={`shrink-0 inline-block px-2 py-0.5 rounded-full ${
+                      r.status === 'Overdue' ? 'bg-red-100 text-red-700' : r.status === 'Due Soon' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    {r.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div className="p-4 border-b flex justify-between items-center">
