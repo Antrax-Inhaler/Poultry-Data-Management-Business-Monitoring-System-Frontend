@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { CUSTOMER_TYPES } from '../api/types'
+import type { Customer } from '../api/types'
+import { useDistinctValues } from '../hooks/useDistinctValues'
+import SuggestInput from './SuggestInput'
 
 export interface CustomerFormValues {
   customer_code: string
@@ -46,6 +49,13 @@ export default function CustomerForm({
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [submitting, setSubmitting] = useState(false)
 
+  const barangays = useDistinctValues<Customer>('/customers', (c) => [c.barangay])
+  const municipalities = useDistinctValues<Customer>('/customers', (c) => [c.municipality])
+  const contactPersons = useDistinctValues<Customer>('/customers', (c) => [c.contact_person])
+  const preferredProducts = useDistinctValues<Customer>('/customers', (c) => [c.preferred_product])
+  const orderFrequencies = useDistinctValues<Customer>('/customers', (c) => [c.preferred_order_frequency])
+  const paymentTerms = useDistinctValues<Customer>('/customers', (c) => [c.payment_terms])
+
   function set<K extends keyof CustomerFormValues>(key: K, value: CustomerFormValues[K]) {
     setForm((f) => ({ ...f, [key]: value }))
   }
@@ -77,7 +87,7 @@ export default function CustomerForm({
         <input value={form.business_name} onChange={(e) => set('business_name', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
       </Field>
       <Field label="Contact Person">
-        <input value={form.contact_person} onChange={(e) => set('contact_person', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput value={form.contact_person} onChange={(v) => set('contact_person', v)} suggestions={contactPersons} className="w-full rounded-md border-gray-300 text-sm" />
       </Field>
       <Field label="Contact Number">
         <input value={form.contact_number} onChange={(e) => set('contact_number', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
@@ -86,19 +96,19 @@ export default function CustomerForm({
         <input value={form.address} onChange={(e) => set('address', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
       </Field>
       <Field label="Barangay">
-        <input value={form.barangay} onChange={(e) => set('barangay', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput value={form.barangay} onChange={(v) => set('barangay', v)} suggestions={barangays} className="w-full rounded-md border-gray-300 text-sm" />
       </Field>
       <Field label="Municipality">
-        <input value={form.municipality} onChange={(e) => set('municipality', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput value={form.municipality} onChange={(v) => set('municipality', v)} suggestions={municipalities} className="w-full rounded-md border-gray-300 text-sm" />
       </Field>
       <Field label="Preferred Product">
-        <input value={form.preferred_product} onChange={(e) => set('preferred_product', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput value={form.preferred_product} onChange={(v) => set('preferred_product', v)} suggestions={preferredProducts} className="w-full rounded-md border-gray-300 text-sm" />
       </Field>
       <Field label="Preferred Order Frequency">
-        <input value={form.preferred_order_frequency} onChange={(e) => set('preferred_order_frequency', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput value={form.preferred_order_frequency} onChange={(v) => set('preferred_order_frequency', v)} suggestions={orderFrequencies} className="w-full rounded-md border-gray-300 text-sm" />
       </Field>
       <Field label="Payment Terms">
-        <input value={form.payment_terms} onChange={(e) => set('payment_terms', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput value={form.payment_terms} onChange={(v) => set('payment_terms', v)} suggestions={paymentTerms} className="w-full rounded-md border-gray-300 text-sm" />
       </Field>
       <div className="flex items-center gap-2">
         <input type="checkbox" id="active" checked={form.active} onChange={(e) => set('active', e.target.checked)} className="rounded border-gray-300" />

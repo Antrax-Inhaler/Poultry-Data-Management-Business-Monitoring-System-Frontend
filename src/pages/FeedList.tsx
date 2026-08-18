@@ -4,8 +4,10 @@ import type { FeedPurchase, Paginated } from '../api/types'
 import { FEED_TYPES } from '../api/types'
 import { useAuth } from '../context/AuthContext'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { useDistinctValues } from '../hooks/useDistinctValues'
 import Pagination from '../components/Pagination'
 import ImportExportBar from '../components/ImportExportBar'
+import SuggestInput from '../components/SuggestInput'
 
 export default function FeedList() {
   const { can } = useAuth()
@@ -119,6 +121,8 @@ function FeedPurchaseForm({ onSaved }: { onSaved: () => void }) {
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [submitting, setSubmitting] = useState(false)
 
+  const suppliers = useDistinctValues<FeedPurchase>('/feed', (p) => [p.supplier])
+
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
   }
@@ -147,7 +151,7 @@ function FeedPurchaseForm({ onSaved }: { onSaved: () => void }) {
       </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">Supplier</label>
-        <input value={form.supplier} onChange={(e) => set('supplier', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput value={form.supplier} onChange={(v) => set('supplier', v)} suggestions={suppliers} className="w-full rounded-md border-gray-300 text-sm" />
       </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">Purchase Date</label>

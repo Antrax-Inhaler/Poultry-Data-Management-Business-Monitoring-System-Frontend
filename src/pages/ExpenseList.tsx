@@ -1,13 +1,15 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import client from '../api/client'
 import type { Expense, Paginated } from '../api/types'
 import { EXPENSE_CATEGORIES } from '../api/types'
 import { useAuth } from '../context/AuthContext'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { useCachedList } from '../hooks/useDistinctValues'
 import { useSelection } from '../hooks/useSelection'
 import Pagination from '../components/Pagination'
 import BulkActionsBar from '../components/BulkActionsBar'
 import ImportExportBar from '../components/ImportExportBar'
+import SuggestInput from '../components/SuggestInput'
 
 export default function ExpenseList() {
   const { can } = useAuth()
@@ -132,6 +134,20 @@ function ExpenseForm({ onSaved }: { onSaved: () => void }) {
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [submitting, setSubmitting] = useState(false)
 
+  const allExpenses = useCachedList<Expense>('/expenses')
+  const descriptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          allExpenses
+            .filter((e) => e.category === form.category)
+            .map((e) => e.description)
+            .filter(Boolean),
+        ),
+      ),
+    [allExpenses, form.category],
+  )
+
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
   }
@@ -164,7 +180,7 @@ function ExpenseForm({ onSaved }: { onSaved: () => void }) {
       </div>
       <div className="sm:col-span-2">
         <label className="block text-xs text-gray-500 mb-1">Description</label>
-        <input required value={form.description} onChange={(e) => set('description', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput required value={form.description} onChange={(v) => set('description', v)} suggestions={descriptions} className="w-full rounded-md border-gray-300 text-sm" />
         {errors.description && <p className="text-xs text-red-600 mt-1">{errors.description[0]}</p>}
       </div>
       <div>

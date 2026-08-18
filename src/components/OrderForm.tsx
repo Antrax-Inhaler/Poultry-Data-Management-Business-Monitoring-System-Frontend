@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import client from '../api/client'
 import type { Customer, Paginated } from '../api/types'
 import { PRODUCT_TYPES, ORDER_STATUSES, PAYMENT_STATUSES } from '../api/types'
+import SearchableSelect from './SearchableSelect'
 
 export interface OrderFormValues {
   customer_id: string
@@ -65,10 +66,16 @@ export default function OrderForm({
   return (
     <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg p-6 space-y-4">
       <Field label="Customer *" error={errors.customer_id}>
-        <select required value={form.customer_id} onChange={(e) => set('customer_id', e.target.value)} className="w-full rounded-md border-gray-300 text-sm">
-          <option value="">Select customer</option>
-          {customers.map((c) => <option key={c.id} value={c.id}>{c.display_name}</option>)}
-        </select>
+        <SearchableSelect
+          required
+          value={form.customer_id}
+          onChange={(v) => set('customer_id', v)}
+          options={customers}
+          getValue={(c) => String(c.id)}
+          getLabel={(c) => c.display_name}
+          placeholder="Type to search customers…"
+          className="w-full rounded-md border-gray-300 text-sm"
+        />
       </Field>
       <Field label="Order Date *">
         <input type="date" required value={form.order_date} onChange={(e) => set('order_date', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />

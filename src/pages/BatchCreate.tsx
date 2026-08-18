@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
+import type { Batch } from '../api/types'
 import { BATCH_STATUSES } from '../api/types'
+import { useDistinctValues } from '../hooks/useDistinctValues'
+import SuggestInput from '../components/SuggestInput'
 
 export default function BatchCreate() {
   const navigate = useNavigate()
@@ -16,6 +19,10 @@ export default function BatchCreate() {
   })
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [submitting, setSubmitting] = useState(false)
+
+  const breedStrains = useDistinctValues<Batch>('/batches', (b) => [b.breed_strain])
+  const suppliers = useDistinctValues<Batch>('/batches', (b) => [b.supplier])
+  const housingSections = useDistinctValues<Batch>('/batches', (b) => [b.housing_section])
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
@@ -54,13 +61,13 @@ export default function BatchCreate() {
           <input type="number" min="1" required value={form.initial_quantity} onChange={(e) => set('initial_quantity', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
         </Field>
         <Field label="Breed / Strain">
-          <input value={form.breed_strain} onChange={(e) => set('breed_strain', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+          <SuggestInput value={form.breed_strain} onChange={(v) => set('breed_strain', v)} suggestions={breedStrains} className="w-full rounded-md border-gray-300 text-sm" />
         </Field>
         <Field label="Supplier">
-          <input value={form.supplier} onChange={(e) => set('supplier', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+          <SuggestInput value={form.supplier} onChange={(v) => set('supplier', v)} suggestions={suppliers} className="w-full rounded-md border-gray-300 text-sm" />
         </Field>
         <Field label="Housing / Section">
-          <input value={form.housing_section} onChange={(e) => set('housing_section', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+          <SuggestInput value={form.housing_section} onChange={(v) => set('housing_section', v)} suggestions={housingSections} className="w-full rounded-md border-gray-300 text-sm" />
         </Field>
         <button disabled={submitting} className="px-4 py-2 bg-gray-800 text-white text-sm rounded-md hover:bg-gray-700 disabled:opacity-50">
           {submitting ? 'Saving…' : 'Create Batch'}

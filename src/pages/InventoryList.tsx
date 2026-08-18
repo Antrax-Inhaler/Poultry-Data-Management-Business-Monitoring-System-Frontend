@@ -5,7 +5,9 @@ import type { InventoryItem, Paginated } from '../api/types'
 import { INVENTORY_CATEGORIES } from '../api/types'
 import { useAuth } from '../context/AuthContext'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { useDistinctValues } from '../hooks/useDistinctValues'
 import Pagination from '../components/Pagination'
+import SuggestInput from '../components/SuggestInput'
 
 export default function InventoryList() {
   const { can } = useAuth()
@@ -124,6 +126,8 @@ function ItemForm({ onSaved }: { onSaved: () => void }) {
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [submitting, setSubmitting] = useState(false)
 
+  const units = useDistinctValues<InventoryItem>('/inventory', (i) => [i.unit])
+
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
   }
@@ -157,7 +161,7 @@ function ItemForm({ onSaved }: { onSaved: () => void }) {
       </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">Unit</label>
-        <input required placeholder="pcs, bottles, kg..." value={form.unit} onChange={(e) => set('unit', e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+        <SuggestInput required placeholder="pcs, bottles, kg..." value={form.unit} onChange={(v) => set('unit', v)} suggestions={units} className="w-full rounded-md border-gray-300 text-sm" />
       </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">Minimum Stock</label>

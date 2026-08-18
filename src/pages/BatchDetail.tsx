@@ -4,6 +4,7 @@ import client from '../api/client'
 import type { Batch, FeedLot } from '../api/types'
 import { MORTALITY_REASONS, HEALTH_EVENT_TYPES } from '../api/types'
 import { useAuth } from '../context/AuthContext'
+import SuggestInput from '../components/SuggestInput'
 
 export default function BatchDetail() {
   const { id } = useParams()
@@ -66,7 +67,14 @@ export default function BatchDetail() {
         )}
         {can('weights.manage') && <QuickWeightForm batchId={batch.id} onSaved={reload} onError={setError} />}
         {can('feed.manage') && <QuickFeedForm batchId={batch.id} lots={feedLots} onSaved={reload} onError={setError} />}
-        {can('health.manage') && <QuickHealthForm batchId={batch.id} onSaved={reload} onError={setError} />}
+        {can('health.manage') && (
+          <QuickHealthForm
+            batchId={batch.id}
+            medications={(batch.health_records ?? []).map((r) => r.medication_vaccine).filter((m): m is string => !!m)}
+            onSaved={reload}
+            onError={setError}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -309,7 +317,17 @@ function QuickFeedForm({
   )
 }
 
-function QuickHealthForm({ batchId, onSaved, onError }: { batchId: number; onSaved: () => void; onError: (msg: string | null) => void }) {
+function QuickHealthForm({
+  batchId,
+  medications,
+  onSaved,
+  onError,
+}: {
+  batchId: number
+  medications: string[]
+  onSaved: () => void
+  onError: (msg: string | null) => void
+}) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [eventType, setEventType] = useState<string>(HEALTH_EVENT_TYPES[0])
   const [medication, setMedication] = useState('')
@@ -353,7 +371,7 @@ function QuickHealthForm({ batchId, onSaved, onError }: { batchId: number; onSav
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">Medication / Vaccine</label>
-          <input value={medication} onChange={(e) => setMedication(e.target.value)} className="w-full rounded-md border-gray-300 text-sm" />
+          <SuggestInput value={medication} onChange={setMedication} suggestions={medications} className="w-full rounded-md border-gray-300 text-sm" />
         </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1">Cost (₱)</label>
